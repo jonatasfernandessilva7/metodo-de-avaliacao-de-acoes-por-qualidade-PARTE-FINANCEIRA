@@ -44,11 +44,11 @@ O sistema detecta automaticamente o setor através do campo de **Dívida Líquid
 O sistema segue esta hierarquia de cálculo:
 
 1. **Cálculo do Enterprise Value (EV):** Valor presente dos fluxos de X anos + Valor Terminal.
-2. **Ajuste Qualitativo:**  $EV_{ajustado} = EV \times Fator\_Qualidade$ (Onde o fator varia conforme ROE, ROA, PEG e Volatilidade).
+2. **Ajuste Qualitativo:**  $EV_{ajustado} = EV \times Fator\ Qualidade$ (Onde o fator varia conforme ROE, ROA, PEG e Volatilidade).
 3. **Dedução de Passivos:** $Equity\ Value = EV_{ajustado} - Divida\ Liquida$ (Ignorado no modo Instituição Financeira).
 4. **Margem de Segurança:** O valor por ação sofre o desconto final definido por você (ex: 10% ou 20%).
-
-- Fórmula Preço Teto: $$\text{Preço Teto} = \left( \frac{\text{Equity Value}}{\text{Total de Ações}} \right) \times (1 - \text{Margem de Segurança})$$
+   
+$$\text{Preço Teto} = \left( \frac{\text{Equity Value}}{\text{Total de Ações}} \right) \times (1 - \text{Margem de Segurança})$$
 ---
 
 ### 5. Resumo
@@ -60,4 +60,5 @@ O sistema segue esta hierarquia de cálculo:
 | **ROE** | < 15% | Reduz Fator de Qualidade |
 | **ROA** | < 7% | Reduz Fator de Qualidade |
 | **Volatilidade** | > 20% | Reduz Fator de Qualidade |
+
 
