@@ -59,5 +59,5 @@ O sistema segue esta hierarquia de cálculo:
 | **Margem Líquida** | < 15% (Bancos) | Aumenta o WACC (Risco) |
 | **ROE** | < 15% | Reduz Fator de Qualidade |
 | **ROA** | < 7% | Reduz Fator de Qualidade |
-
 | **Volatilidade** | > 20% | Reduz Fator de Qualidade |
+
