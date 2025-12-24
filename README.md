@@ -1,4 +1,4 @@
-## Documentação: Sistema de Valuation de Qualidade (Híbrido)
+## Sistema de Valuation de Qualidade
 
 O sistema foi projetado para investidores que buscam empresas capazes de manter receita e lucro constantes mesmo em cenários adversos, priorizando a solvência e a eficiência real.
 
@@ -59,4 +59,5 @@ O sistema segue esta hierarquia de cálculo:
 | **Margem Líquida** | < 15% (Bancos) | Aumenta o WACC (Risco) |
 | **ROE** | < 15% | Reduz Fator de Qualidade |
 | **ROA** | < 7% | Reduz Fator de Qualidade |
+
 | **Volatilidade** | > 20% | Reduz Fator de Qualidade |
