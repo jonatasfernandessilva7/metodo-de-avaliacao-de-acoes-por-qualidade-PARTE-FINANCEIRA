@@ -1,10 +1,11 @@
 import streamlit as st
 import locale
 
-try:
-    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
-except:
-    locale.setlocale(locale.LC_ALL, '')
+def format_brl(valor):
+    try:
+        return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except:
+        return "R$ 0,00"
 
 def valuation_final(fcl, crescimento, anos, wacc, divida_liquida, ebitda, 
                     patrimonio_liquido, lucro_liquido, ativos_totais, receita_liquida,
@@ -98,8 +99,8 @@ if st.button("CALCULAR PREÇO TETO"):
     
     st.divider()
     res1, res2, res3 = st.columns(3)
-    res1.metric("Valor Justo", locale.currency(v_justo, grouping=True))
-    res2.metric("PREÇO TETO", locale.currency(p_teto, grouping=True))
+    res1.metric("Valor Justo", format_brl(v_justo))
+    res2.metric("PREÇO TETO", format_brl(p_teto))
     res3.metric("ROE", f"{roe_calc*100:.2f}%")
 
     if banco_detectado:
