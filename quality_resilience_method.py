@@ -1,5 +1,4 @@
 import streamlit as st
-import locale
 
 def format_brl(valor):
     try:
@@ -28,19 +27,78 @@ def valuation_final(fcl, crescimento, anos, wacc, divida_liquida, ebitda,
     if alerta_solvencia:
         wacc += 0.02 
     
-    # --- FILTROS QA ---
-    roe = lucro_liquido / patrimonio_liquido if patrimonio_liquido != 0 else 0
-    roa = lucro_liquido / ativos_totais if ativos_totais != 0 else 0 
-    
+    # --- FILTROS DE QUALIDADE ---
+
+    # ROE e ROA
+    roe = lucro_liquido / patrimonio_liquido if patrimonio_liquido > 0 else 0
+    roa = lucro_liquido / ativos_totais if ativos_totais > 0 else 0
+
+    # Ajuste de ROE por alavancagem (importante p/ bancos)
+    alavancagem = ativos_totais / patrimonio_liquido if patrimonio_liquido > 0 else 0
+    roe_ajustado = roe / alavancagem if alavancagem > 0 else roe
+
     fator_qualidade = 1.0
+
+    # --- ROE AJUSTADO ---
+    if roe_ajustado >= 0.20:
+        fator_qualidade += 0.05
+    elif roe_ajustado >= 0.15:
+        fator_qualidade += 0.00
+    elif roe_ajustado >= 0.10:
+        fator_qualidade -= 0.05
+    else:
+        fator_qualidade -= 0.10
+
+    # --- ROA ---
+    if roa >= 0.10:
+        fator_qualidade += 0.05
+    elif roa >= 0.07:
+        fator_qualidade += 0.00
+    elif roa >= 0.04:
+        fator_qualidade -= 0.05
+    else:
+        fator_qualidade -= 0.10
+
+    # --- VOLATILIDADE DO LUCRO ---
+    if volatilidade_lucro <= 0.10:
+        fator_qualidade += 0.05
+    elif volatilidade_lucro <= 0.20:
+        fator_qualidade += 0.00
+    elif volatilidade_lucro <= 0.30:
+        fator_qualidade -= 0.05
+    else:
+        fator_qualidade -= 0.10
+
+    # --- PEG RATIO ---
+    if peg_ratio <= 1.0:
+        fator_qualidade += 0.05
+    elif peg_ratio <= 2.0:
+        fator_qualidade += 0.00
+    else:
+        fator_qualidade -= 0.10
+
+    fator_qualidade = max(0.70, fator_qualidade)
+
+    # --- AJUSTE DE WACC PELO SCORE DE QUALIDADE ---
+    if fator_qualidade >= 1.05:
+        wacc -= 0.01   # empresa excelente
+    elif fator_qualidade >= 0.95:
+        wacc += 0.00   # neutro
+    elif fator_qualidade >= 0.85:
+        wacc += 0.01   # risco moderado
+    else:
+        wacc += 0.02   # risco elevado
+
+    # --- AJUSTE DE WACC PELO SCORE DE QUALIDADE ---
+    if fator_qualidade >= 1.05:
+        wacc -= 0.01   # empresa excelente
+    elif fator_qualidade >= 0.95:
+        wacc += 0.00   # neutro
+    elif fator_qualidade >= 0.85:
+        wacc += 0.01   # risco moderado
+    else:
+        wacc += 0.02   # risco elevado
     
-    fator_qualidade = 1.0
-    if roe < 0.15: fator_qualidade -= 0.10
-    if roa < 0.07: fator_qualidade -= 0.05
-    if volatilidade_lucro > 0.20: fator_qualidade -= 0.10
-    if peg_ratio > 2.0: fator_qualidade -= 0.15
-    elif peg_ratio < 1.0: fator_qualidade += 0.05
-        
     # --- DCF ---
     valor_presente = 0
     for t in range(1, anos + 1):
@@ -61,8 +119,29 @@ def valuation_final(fcl, crescimento, anos, wacc, divida_liquida, ebitda,
     
     v_justo_acao = equity_value / total_acoes
     p_teto = v_justo_acao * (1 - margem_seguranca)
-    
-    return v_justo_acao, p_teto, roe, dl_ebitda, is_banco
+
+    # --- SCORE DE QUALIDADE ---
+    score_qualidade = int(max(0, min(100, fator_qualidade * 100)))
+
+    # --- CLASSIFICAÇÃO ---
+    if score_qualidade >= 80:
+        classificacao = "🟢 COMPRAR"
+    elif score_qualidade >= 65:
+        classificacao = "🟡 OBSERVAR"
+    else:
+        classificacao = "🔴 EVITAR"
+
+    return (
+        v_justo_acao,
+        p_teto,
+        roe,
+        dl_ebitda,
+        is_banco,
+        fator_qualidade,
+        score_qualidade,
+        classificacao,
+        wacc
+    )
 
 st.set_page_config(page_title="Valuation Resiliente - VR", layout="wide")
 st.title("📈 Calculadora de Valuation")
@@ -92,16 +171,35 @@ with col2:
     total_acoes = st.number_input("Total de Ações", value=00)
 
 if st.button("CALCULAR PREÇO TETO"):
-    v_justo, p_teto, roe_calc, dl_ebitda_calc, banco_detectado = valuation_final(
+    (
+        v_justo,
+        p_teto,
+        roe_calc,
+        dl_ebitda_calc,
+        banco_detectado,
+        fator_q,
+        score_q,
+        classe_final,
+        wacc_final
+    ) = valuation_final(
         fcl, crescimento, anos, wacc, divida_liquida, ebitda,
-        patrimonio, lucro_l, ativos, receita, peg, 0.10, total_acoes, margem_seg
+        patrimonio, lucro_l, ativos, receita, peg, 0.10,
+        total_acoes, margem_seg
     )
+
     
     st.divider()
-    res1, res2, res3 = st.columns(3)
+    res1, res2, res3, res4 = st.columns(4)
     res1.metric("Valor Justo", format_brl(v_justo))
     res2.metric("PREÇO TETO", format_brl(p_teto))
     res3.metric("ROE", f"{roe_calc*100:.2f}%")
+    res4.metric("Score Qualidade", f"{score_q}/100")
+
+    st.subheader("📌 Classificação Final")
+    st.markdown(f"### {classe_final}")
+
+    st.caption(f"Fator de Qualidade: {fator_q:.2f} | WACC Ajustado: {wacc_final*100:.2f}%")
+
 
     if banco_detectado:
         st.info("🏦 Modo Instituição Financeira Ativado: Dívida Líquida ignorada no cálculo.")
