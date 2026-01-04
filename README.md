@@ -93,9 +93,10 @@ O cálculo segue a hierarquia:
 
    (ignorado em bancos/instituições financeiras)
    
-4. **Margem de Segurança:**
+4. **Margem de Segurança:** <br><br>
    $$\text{Preço Teto} = \left( \frac{\text{Equity Value}}{\text{Total de Ações}} \right) \times (1 - \text{Margem de Segurança})$$
-5. **Score e Classificação:**
+   
+6. **Score e Classificação:**
 
 * Score 0–100, influencia WACC e decisão final
 
@@ -130,4 +131,5 @@ O cálculo segue a hierarquia:
 
 * O VRQ é **híbrido**: combina **valuation clássico (DCF)** com **fatores qualitativos** e ajustes automáticos de risco
 * Pode ser aplicado a **empresas comuns e financeiras**
+
 * Permite decisões objetivas: **Comprar, Observar ou Evitar** → ***(Não leve como uma recomendação de investimento, a decisão final é de sua responsabilidade)***
