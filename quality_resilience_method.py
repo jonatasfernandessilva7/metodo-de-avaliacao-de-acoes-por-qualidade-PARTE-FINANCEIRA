@@ -116,9 +116,12 @@ def valuation_final(fcl, crescimento, anos, wacc, divida_liquida, ebitda,
     else:
         enterprise_value = (valor_presente + valor_terminal_presente) * fator_qualidade
         equity_value = enterprise_value - divida_liquida
-    
-    v_justo_acao = equity_value / total_acoes
-    p_teto = v_justo_acao * (1 - margem_seguranca)
+    if total_acoes is None or total_acoes <= 0:
+        v_justo_acao = 0
+        p_teto = 0
+    else:  
+        v_justo_acao = equity_value / total_acoes
+        p_teto = v_justo_acao * (1 - margem_seguranca)
 
     # --- SCORE DE QUALIDADE ---
     score_qualidade = int(max(0, min(100, fator_qualidade * 100)))
@@ -168,9 +171,14 @@ with col2:
     lucro_l = st.number_input("Lucro Líquido (R$)", value=00.0)
     ativos = st.number_input("Ativos Totais (R$)", value=00.0)
     peg = st.number_input("PEG Ratio", value=0.00)
-    total_acoes = st.number_input("Total de Ações", value=00)
+    total_acoes = st.number_input("Total de Ações", min_value=1, value=1, step=1 )
 
 if st.button("CALCULAR PREÇO TETO"):
+
+    if total_acoes <= 0:
+        st.error("❌ O Total de Ações deve ser maior que zero.")
+        st.stop()
+
     (
         v_justo,
         p_teto,
@@ -199,7 +207,6 @@ if st.button("CALCULAR PREÇO TETO"):
     st.markdown(f"### {classe_final}")
 
     st.caption(f"Fator de Qualidade: {fator_q:.2f} | WACC Ajustado: {wacc_final*100:.2f}%")
-
 
     if banco_detectado:
         st.info("🏦 Modo Instituição Financeira Ativado: Dívida Líquida ignorada no cálculo.")
